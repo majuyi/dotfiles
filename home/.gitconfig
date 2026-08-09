@@ -1,0 +1,48 @@
+[user]
+	name = Majuyi
+	email = majuyitan@gmail.com
+[alias]
+	change-commits = "!f() { VAR=$1; OLD=$2; NEW=$3; shift 3; git filter-branch --env-filter \"if [[ \\\"$`echo $VAR`\\\" = '$OLD' ]]; then export $VAR='$NEW'; fi\" $@; }; f"
+	st = status -sb
+	co = checkout
+	br = branch
+	cm = commit -m
+	amend = commit --amend --no-edit
+	lg = log --graph --pretty=format:'%C(auto)%h%d %s %C(dim)(%cr) <%an>'
+	last = log -1 --stat
+	unstage = restore --staged
+[credential "https://github.com"]
+	helper = 
+	helper = !/opt/homebrew/bin/gh auth git-credential
+[credential "https://gist.github.com"]
+	helper = 
+	helper = !/opt/homebrew/bin/gh auth git-credential
+[push]
+	autoSetupRemote = true
+[pull]
+	rebase = true
+[init]
+	defaultBranch = main
+[rebase]
+	autosquash = true
+	autostash = true
+[diff]
+	algorithm = histogram
+[branch]
+	sort = -committerdate
+[column]
+	ui = auto
+[fetch]
+	prune = true
+[merge]
+	conflictstyle = zdiff3
+[rerere]
+	enabled = true
+[core]
+	pager = delta
+[interactive]
+	diffFilter = delta --color-only
+[delta]
+	navigate = true
+	line-numbers = true
+	side-by-side = false

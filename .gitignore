@@ -1,0 +1,6 @@
+.DS_Store
+*.backup-*
+# runtime state that regenerates itself
+config/nvim/view/
+config/nvim/undo/
+config/nvim/swap/
