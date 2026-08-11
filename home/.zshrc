@@ -116,20 +116,42 @@ TIMEFMT=$'\nreal\t%E\nuser\t%U\nsys\t%S\ncpu\t%P'
 # no external prompt binary. `*` means unstaged changes, `+` means staged.
 autoload -Uz vcs_info
 zstyle ':vcs_info:*' enable git
-zstyle ':vcs_info:git:*' check-for-changes true
+
+# check-for-changes is what produces `*`/`+`, and it costs a diff against the
+# index on every prompt. Invisible in small repos, a real stall in large ones.
+# `vcs-dirty off` drops it for the session (branch name stays); `vcs-dirty on`
+# restores it. To kill it permanently for known-huge trees, uncomment and edit:
+# zstyle ':vcs_info:*' disable-patterns "$HOME/some/monorepo(|/*)"
+VCS_DIRTY_CHECK=${VCS_DIRTY_CHECK:-true}
+vcs-dirty() {
+    case "$1" in
+        on|true)   VCS_DIRTY_CHECK=true  ;;
+        off|false) VCS_DIRTY_CHECK=false ;;
+        "")        print -r -- "vcs-dirty: $VCS_DIRTY_CHECK"; return 0 ;;
+        *)         print -ru2 -- "usage: vcs-dirty [on|off]"; return 1 ;;
+    esac
+    zstyle ':vcs_info:git:*' check-for-changes "$VCS_DIRTY_CHECK"
+}
+zstyle ':vcs_info:git:*' check-for-changes "$VCS_DIRTY_CHECK"
+
 zstyle ':vcs_info:git:*' unstagedstr '*'
 zstyle ':vcs_info:git:*' stagedstr '+'
-zstyle ':vcs_info:git:*' formats       '%b%u%c'
-zstyle ':vcs_info:git:*' actionformats '%b|%a%u%c'
+# The `─(...)` wrapper and colour live here, not in PROMPT. Wrapping them in a
+# ${vcs_info_msg_0_:+...} block instead silently ate the branch name: zsh pairs
+# the `{` of a `%F{...}` inside the :+ body with the `}` of the nested
+# ${vcs_info_msg_0_}, truncating the colour escape and leaking a stray `}`.
+# formats only emit when inside a repo, so the conditional was never needed.
+zstyle ':vcs_info:git:*' formats       '─(%F{yellow}%b%u%c%f)'
+zstyle ':vcs_info:git:*' actionformats '─(%F{yellow}%b|%a%u%c%f)'
 
 configure_prompt() {
     case "$PROMPT_ALTERNATIVE" in
         twoline)
-            PROMPT=$'%F{%(#.blue.green)}┌──${VIRTUAL_ENV:+($(basename $VIRTUAL_ENV))─}(%B%F{%(#.red.blue)}Ave Majuyi%b%F{%(#.blue.green)})-[%B%F{reset}%(6~.%-1~/…/%4~.%5~)%b%F{%(#.blue.green)}]${vcs_info_msg_0_:+─(%F{yellow}${vcs_info_msg_0_}%F{%(#.blue.green)})}\n└─%B%(#.%F{red}#.%F{blue}$)%b%F{reset} '
+            PROMPT=$'%F{%(#.blue.green)}┌──${VIRTUAL_ENV:+($(basename $VIRTUAL_ENV))─}(%B%F{%(#.red.blue)}Ave Majuyi%b%F{%(#.blue.green)})-[%B%F{reset}%(6~.%-1~/…/%4~.%5~)%b%F{%(#.blue.green)}]${vcs_info_msg_0_}%F{%(#.blue.green)}\n└─%(?..%B%F{red}[%?]%b%F{%(#.blue.green)} )%B%(#.%F{red}#.%F{blue}$)%b%F{reset} '
             RPROMPT=
             ;;
         oneline)
-            PROMPT=$'${VIRTUAL_ENV:+($(basename $VIRTUAL_ENV))}%B%F{%(#.red.blue)}%n@%m%b%F{reset}:%B%F{%(#.blue.green)}%~%b%F{reset}%(#.#.$) '
+            PROMPT=$'${VIRTUAL_ENV:+($(basename $VIRTUAL_ENV))}%B%F{%(#.red.blue)}%n@%m%b%F{reset}:%B%F{%(#.blue.green)}%~%b%F{reset}%(?.. %B%F{red}[%?]%b%F{reset})%(#.#.$) '
             RPROMPT=
             ;;
     esac
@@ -150,7 +172,9 @@ toggle_oneline_prompt() {
     zle reset-prompt
 }
 zle -N toggle_oneline_prompt
-bindkey ^P toggle_oneline_prompt
+# Alt-P, not ^P: in the emacs keymap ^P is up-line-or-history, the partner to
+# ^N, and shadowing it costs a core navigation key for a rarely-used toggle.
+bindkey '^[p' toggle_oneline_prompt
 
 case "$TERM" in
     xterm*|rxvt*|kitty*|alacritty|screen*|tmux*)
@@ -158,7 +182,13 @@ case "$TERM" in
         ;;
 esac
 
-precmd() {
+# Registered on the precmd hook array rather than defined as a bare `precmd`
+# function: the function is a single global slot, so anything sourced later
+# that defines its own (iTerm2 shell integration is the usual culprit) would
+# silently replace this one and stop the git segment and title from updating.
+autoload -Uz add-zsh-hook
+
+_zshrc_precmd() {
     vcs_info                      # refresh ${vcs_info_msg_0_} for the prompt
     print -Pnr -- "$TERM_TITLE"
     # blank line between commands, but not above the first prompt
@@ -170,6 +200,7 @@ precmd() {
         fi
     fi
 }
+add-zsh-hook precmd _zshrc_precmd
 
 # ---------------------------------------------------------------------------
 # Colour and aliases
