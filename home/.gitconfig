@@ -46,3 +46,8 @@
 	navigate = true
 	line-numbers = true
 	side-by-side = false
+# Machine-local overrides, if present. Keep this last so it wins.
+# Git ignores this silently when the file does not exist, so the tracked
+# config stays portable across machines.
+[include]
+	path = ~/.gitconfig.local
