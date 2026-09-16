@@ -1,6 +1,15 @@
-# Osaka-coloured powerline prompt, shaped after craftzdog's:
+# Osaka-coloured powerline prompt:
 #
-#    ~/A/W/553/Sandbox  ⑂ main !2                       1m 22s / 03:20:14
+#    ~/Atelier/Workspace/553/paybook   main ?4  ❯          1m 22s / 03:20:14
+#    └ black on blue, full path     └ black on yellow: branch and counts together
+#
+# Both endings finish on a small slate wedge. It started life as a bug — the
+# old layout drew an empty grey git block's caps in non-repos — and was kept
+# on purpose after comparing the two side by side.
+#
+# The branch icon (U+E0A0) and the black-on-colour git block come from
+# craftzdog's Tide config. His recolours by state (blue clean, yellow dirty);
+# this stays yellow, with the counts saying whether anything is uncommitted.
 #
 # Same palette as ~/.config/kitty/solarized-osaka-dark.conf and the tmux
 # status bar, so the prompt, the bar and the editor stop disagreeing.
@@ -12,9 +21,13 @@ add_newline = false
 
 format = """\
 $directory\
-[](fg:#268bd3 bg:#576d74)\
+${env_var.STARSHIP_CAP_BLUE_GREY}\
+${env_var.STARSHIP_CAP_BLUE_RED}\
 $git_branch\
 $git_status\
+${env_var.STARSHIP_CAP_YEL_GREY}\
+${env_var.STARSHIP_CAP_YEL_RED}\
+$status\
 [](fg:#576d74)\
 $character"""
 
@@ -23,24 +36,39 @@ right_format = "$cmd_duration$time"
 [directory]
 style = "fg:#001419 bg:#268bd3 bold"
 format = "[ $path ]($style)"
-# Four components, parents shortened to two letters each — what turns
-# ~/Atelier/Workspace/553/Sandbox into ~/At/Wo/553/Sandbox rather than
-# eating half the line.
-truncation_length = 4
-truncation_symbol = "…/"
-fish_style_pwd_dir_length = 2
+truncation_length = 0
+truncate_to_repo = false
+
+# The blocks run blue (path) -> yellow (git, in a repo) -> red (exit code, on
+# failure) -> a grey tail. Two of those are conditional, so the cap after the
+# path or the git block has to know what comes next: blue or yellow, into red
+# or grey. Starship cannot work that out, so no block draws its own closing cap.
+# .zshrc does, before every prompt — it walks up for a .git without starting a
+# process, reads the exit code starship's own hook saved — and exports exactly
+# one of these four. env_var modules cost nothing to render.
+[env_var.STARSHIP_CAP_BLUE_GREY]
+format = "[](fg:#268bd3 bg:#576d74)"
+
+[env_var.STARSHIP_CAP_BLUE_RED]
+format = "[](fg:#268bd3 bg:#db302d)"
+
+[env_var.STARSHIP_CAP_YEL_GREY]
+format = "[](fg:#b28500 bg:#576d74)"
+
+[env_var.STARSHIP_CAP_YEL_RED]
+format = "[](fg:#b28500 bg:#db302d)"
 
 [git_branch]
-symbol = "⑂ "
-style = "fg:#001419 bg:#576d74"
-format = "[ $symbol$branch ]($style)"
+symbol = " "
+style = "fg:#001419 bg:#b28500"
+format = "[](fg:#268bd3 bg:#b28500)[ $symbol$branch]($style)"
 
 [git_status]
-style = "fg:#001419 bg:#576d74"
-format = "[$all_status$ahead_behind ]($style)"
-# Starship's defaults are bare symbols: "!" whether one file changed or forty.
-# ${count} is what produces the "!2" / "!5" in his shot, which is the only part
-# of a dirty-state indicator that tells you anything.
+# Counts inside the same yellow block as the branch. ( ) drops the leading
+# space when there is nothing to count, so a clean repo reads " main " rather
+# than " main  ". The cap after it comes from .zshrc — see the env_var modules.
+style = "fg:#001419 bg:#b28500"
+format = "[( $all_status$ahead_behind) ]($style)"
 conflicted = "=${count}"
 ahead = "⇡${count}"
 behind = "⇣${count}"
@@ -68,3 +96,24 @@ disabled = false
 time_format = "%H:%M:%S"
 style = "fg:#576d74"
 format = "[ / $time]($style)"
+
+# The exit code of the last command, on failure only — invisible otherwise.
+#
+# .zshrc already did this (%(?..[%?]), added in "zsh: surface exit status");
+# moving to starship dropped it. Worth having back because $? is clobbered by
+# the next command, including the mistyped retry, so `echo $?` is gone exactly
+# when you reach for it. And the colour alone only says that something failed:
+# 127 (not found, so a typo or a missing install) and 1 (ran, disliked what it
+# found) lead to different next moves.
+#
+# Ctrl-C does show 130 every time. map_symbol/sigint_symbol only replace the
+# symbol, not $status, so there is no way to suppress that one alone.
+[status]
+disabled = false
+# A block, not a bare number: everything else in this prompt is filled with
+# caps either side, so a naked red digit floating before the arrow read as
+# debris rather than a segment. It sits after the git block's closing cap
+# and carries its own caps, which is what lets it disappear cleanly on
+# success — a block spliced into the middle of the chain would leave a
+# colour seam behind when it vanished.
+format = "[ $status ](fg:#001419 bg:#db302d bold)[](fg:#db302d bg:#576d74)"

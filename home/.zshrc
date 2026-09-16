@@ -189,7 +189,30 @@ bindkey '^[p' toggle_oneline_prompt
 PROMPT_STYLE=${PROMPT_STYLE:-starship}
 if [ "$PROMPT_STYLE" = starship ] && command -v starship >/dev/null 2>&1; then
     eval "$(starship init zsh)"
+    _STARSHIP_ACTIVE=1
 fi
+
+# Picks the one powerline cap starship's prompt needs between its last coloured
+# block and whatever follows — see the env_var modules in starship.toml. The
+# path is blue, the git block yellow; the next block is red when the last
+# command failed, the grey tail otherwise. Pure zsh: walks up from $PWD for a
+# .git (a directory, or a file in worktrees and submodules) without starting a
+# process, and reads the exit code prompt_starship_precmd saved, which runs
+# just before this.
+_starship_caps() {
+    local last=BLUE next=GREY d=$PWD
+    while :; do
+        if [[ -e $d/.git ]]; then
+            last=YEL
+            break
+        fi
+        [[ $d == / || -z $d ]] && break
+        d=${d:h}
+    done
+    [[ -n $STARSHIP_CMD_STATUS && $STARSHIP_CMD_STATUS != 0 ]] && next=RED
+    unset STARSHIP_CAP_BLUE_GREY STARSHIP_CAP_BLUE_RED STARSHIP_CAP_YEL_GREY STARSHIP_CAP_YEL_RED
+    export "STARSHIP_CAP_${last}_${next}=1"
+}
 
 case "$TERM" in
     xterm*|rxvt*|kitty*|alacritty|screen*|tmux*)
@@ -204,7 +227,13 @@ esac
 autoload -Uz add-zsh-hook
 
 _zshrc_precmd() {
-    vcs_info                      # refresh ${vcs_info_msg_0_} for the prompt
+    # vcs_info only feeds the zsh prompt. With starship drawing git itself it
+    # was a second full git pass before every prompt, for output nothing read.
+    if [ -n "$_STARSHIP_ACTIVE" ]; then
+        _starship_caps
+    else
+        vcs_info                  # refresh ${vcs_info_msg_0_} for the prompt
+    fi
     print -Pnr -- "$TERM_TITLE"
     # blank line between commands, but not above the first prompt
     if [ "$NEWLINE_BEFORE_PROMPT" = yes ]; then
@@ -223,10 +252,27 @@ add-zsh-hook precmd _zshrc_precmd
 # The old dircolors block was guarded on /usr/bin/dircolors, which macOS does
 # not ship — so none of this ran. CLICOLOR/LSCOLORS is the BSD equivalent.
 export CLICOLOR=1
+
 alias ls='ls -G'
-alias ll='ls -lG'
 alias la='ls -A'
 alias l='ls -CF'
+
+# Only ll gets eza, which is how craftzdog splits it — and the reason is not
+# taste. eza's -t is --time <FIELD> and takes a value, so `ls -latr` becomes
+# "invalid value 'r' for '--time <FIELD>'" the moment ls is eza. Leaving ls as
+# BSD ls keeps every flag combination you already have in your fingers.
+#
+# --icons=auto rather than his bare --icons: the flag's value is optional, so
+# `ll somedir` parses the directory as the value and errors. auto also drops
+# the icons when output is piped, so `ll | wc -l` stays honest.
+#
+# Guarded like his `if type -q eza`, so a machine without eza still gets a
+# working ll rather than "command not found".
+if command -v eza >/dev/null 2>&1; then
+    alias ll='eza -l -g --icons=auto --group-directories-first'
+else
+    alias ll='ls -lG'
+fi
 
 alias grep='grep --color=auto'
 alias fgrep='fgrep --color=auto'
