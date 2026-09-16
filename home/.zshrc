@@ -176,6 +176,21 @@ zle -N toggle_oneline_prompt
 # ^N, and shadowing it costs a core navigation key for a rarely-used toggle.
 bindkey '^[p' toggle_oneline_prompt
 
+# A third prompt: starship, in the same Osaka palette as tmux, kitty and nvim
+# (~/.config/starship.toml). It gives two things the zsh prompt above does not
+# — how long the last command ran, and a right-aligned clock.
+#
+# Everything above stays intact and is one env var away: `export PROMPT_STYLE=zsh`
+# then `exec zsh`. It is also the automatic fallback if the binary ever goes
+# missing, so a broken install cannot leave you without a prompt.
+#
+# Note that Alt-P is inert while starship is active: starship re-sets PROMPT on
+# every precmd, so the twoline/oneline toggle has nothing to hold on to.
+PROMPT_STYLE=${PROMPT_STYLE:-starship}
+if [ "$PROMPT_STYLE" = starship ] && command -v starship >/dev/null 2>&1; then
+    eval "$(starship init zsh)"
+fi
+
 case "$TERM" in
     xterm*|rxvt*|kitty*|alacritty|screen*|tmux*)
         TERM_TITLE=$'\e]0;${VIRTUAL_ENV:+($(basename $VIRTUAL_ENV))}%n@%m: %~\a'
