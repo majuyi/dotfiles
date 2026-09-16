@@ -4,6 +4,7 @@ local M = {}
 
 -- List of available colorschemes (this list may not satisfy particular standards for completeness)
 M.schemes = {
+    "solarized-osaka",
     "catppuccin",
     "doom-one",
     "moonfly",
@@ -15,7 +16,7 @@ M.schemes = {
 }
 
 -- Default colorscheme to load on startup
-M.default = "moonfly"
+M.default = "solarized-osaka"
 
 -- Function to apply a colorscheme safely
 function M.apply(scheme)

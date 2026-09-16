@@ -50,6 +50,7 @@ done
 # anything else you keep in ~/.config/kitty stays untouched.
 link "$DOTFILES/config/nvim" "$CONFIG_HOME/nvim"
 link "$DOTFILES/config/kitty/kitty.conf" "$CONFIG_HOME/kitty/kitty.conf"
+link "$DOTFILES/config/kitty/solarized-osaka-dark.conf" "$CONFIG_HOME/kitty/solarized-osaka-dark.conf"
 
 echo
 echo "Done. Open a new shell to pick up the zsh config."

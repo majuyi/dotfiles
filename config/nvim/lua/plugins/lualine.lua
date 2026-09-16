@@ -11,7 +11,11 @@ return {
 	config = function()
 		require("lualine").setup({
 			options = {
-				theme = "carbonfox",
+				-- "auto" resolves to lua/lualine/themes/<colorscheme>.lua, which
+				-- solarized-osaka ships — and it re-resolves on ColorScheme, so
+				-- <leader>cs now recolours the statusline too instead of leaving
+				-- carbonfox behind.
+				theme = "auto",
 				section_separators = '',
 				component_separators = '',
 				icons_enabled = true,
