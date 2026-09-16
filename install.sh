@@ -49,6 +49,7 @@ done
 # ~/.config — nvim is linked as a whole directory, kitty per-file so that
 # anything else you keep in ~/.config/kitty stays untouched.
 link "$DOTFILES/config/nvim" "$CONFIG_HOME/nvim"
+link "$DOTFILES/config/tmux" "$CONFIG_HOME/tmux"
 link "$DOTFILES/config/kitty/kitty.conf" "$CONFIG_HOME/kitty/kitty.conf"
 link "$DOTFILES/config/kitty/solarized-osaka-dark.conf" "$CONFIG_HOME/kitty/solarized-osaka-dark.conf"
 link "$DOTFILES/config/starship.toml" "$CONFIG_HOME/starship.toml"
