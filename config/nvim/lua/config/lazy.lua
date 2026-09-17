@@ -32,7 +32,9 @@ require("lazy").setup({
     },
     -- Configure any other settings here. See the documentation for more details.
     -- colorscheme that will be used when installing plugins.
-    install = { colorscheme = { "moonfly" } },
+    -- Matches colorscheme.lua's M.default: this was still naming moonfly
+    -- after moonfly stopped being the startup scheme.
+    install = { colorscheme = { "solarized-osaka" } },
     -- No plugin here needs luarocks. Without this, lazy bootstraps hererocks
     -- (its own Lua+luarocks install) just to satisfy the check.
     rocks = { enabled = false },
