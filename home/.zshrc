@@ -209,7 +209,8 @@ _starship_caps() {
         [[ $d == / || -z $d ]] && break
         d=${d:h}
     done
-    [[ -n $STARSHIP_CMD_STATUS && $STARSHIP_CMD_STATUS != 0 ]] && next=RED
+    # Red if anything in the pipeline failed, matching the status block.
+    [[ -n $STARSHIP_CMD_STATUS && ${STARSHIP_PIPE_STATUS[*]:-$STARSHIP_CMD_STATUS} == *[1-9]* ]] && next=RED
     unset STARSHIP_CAP_BLUE_GREY STARSHIP_CAP_BLUE_RED STARSHIP_CAP_YEL_GREY STARSHIP_CAP_YEL_RED
     export "STARSHIP_CAP_${last}_${next}=1"
 }

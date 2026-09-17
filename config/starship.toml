@@ -117,3 +117,10 @@ disabled = false
 # success — a block spliced into the middle of the chain would leave a
 # colour seam behind when it vanished.
 format = "[ $status ](fg:#001419 bg:#db302d bold)[](fg:#db302d bg:#576d74)"
+# Every command in a pipeline, not just the last: `false | true` would
+# otherwise read as success. Shown as "1 | 0" in the same red block, and
+# only when something in the pipe failed.
+pipestatus = true
+pipestatus_separator = " | "
+pipestatus_segment_format = "$status"
+pipestatus_format = "[ $pipestatus ](fg:#001419 bg:#db302d bold)[](fg:#db302d bg:#576d74)"
