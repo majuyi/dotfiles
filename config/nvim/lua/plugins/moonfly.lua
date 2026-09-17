@@ -4,8 +4,12 @@
 return {
     "bluz71/vim-moonfly-colors",
     name = "moonfly",
-    lazy = false,   -- the startup colorscheme
-    priority = 1000, -- must load before everything else
+    lazy = true, -- on demand: loaded when <leader>cs picks it
+    -- Was lazy = false, priority = 1000. colorscheme.lua defaults to
+    -- solarized-osaka and applies it last, so everything below — the
+    -- custom_colors table and the two NvimTree highlights — ran on every
+    -- startup only to be overwritten a moment later. priority goes with it:
+    -- it only orders plugins that load at startup.
     config = function()
         -- Set dark background
         vim.opt.background = "dark"
