@@ -1,0 +1,93 @@
+" do not get too attached to this vimrc, get a standard one as soon as possible
+
+syntax on
+
+set tabstop=4       " The width of a TAB is set to 4.
+                    " Still it is a \t. It is just that
+                    " Vim will interpret it to be having
+                    " a width of 4.
+set shiftwidth=4    " Indents will have a width of 4.
+set softtabstop=4   " Sets the number of columns for a TAB.
+set noexpandtab     " Prevents expanding TABs to spaces.
+			  " Lucky for us, we can easily press :retab and all the damage that the previous Dami has done will be undone.
+set autoindent
+set smartindent
+set nu
+set relativenumber
+set nowrap
+set smartcase
+set swapfile
+set backup
+set backupdir=~/.vim/backupdir,.,/tmp
+set undodir=~/.vim/undodir
+set undofile
+set incsearch
+set backspace=2
+set backspace=indent,eol,start
+set clipboard=unnamedplus
+set signcolumn=yes
+set completeopt-=preview " Disables the annoying scratch preview that pops up at the top
+
+colorscheme pablo
+
+set rtp+=~/.fzf
+
+let g:fzf_layout = { 'window': { 'width': 0.75, 'height': 0.75 } }
+" let g:fzf_layout = { 'down': '~30%' }
+let $FZF_DEFAULT_OPTS='--no-reverse'
+
+if executable('rg')
+	let g:rg_derive_root='true'
+endif
+
+let mapleader=" "
+let g:netrw_browse_split=2
+let g:netrw_banner=0
+let g:netrw_winsize=25
+
+" https://stackoverflow.com/questions/2158516/delay-before-o-opens-a-new-line
+" This may slow you down over connections. Check the above webpage
+set timeout timeoutlen=3000 ttimeoutlen=100
+
+map gA m'ggVG"+y''
+
+nnoremap <leader>h :wincmd h<CR>
+nnoremap <leader>j :wincmd j<CR>
+nnoremap <leader>k :wincmd k<CR>
+nnoremap <leader>l :wincmd l<CR>
+nnoremap <leader>H :wincmd H<CR>
+nnoremap <leader>J :wincmd J<CR>
+nnoremap <leader>K :wincmd K<CR>
+nnoremap <leader>L :wincmd L<CR>
+nnoremap <leader>e :tabe <CR>
+nnoremap <leader>f :Files <CR>
+" nnoremap <leader>p :tabp <CR>
+" Why is the above remap so slow?
+nnoremap <leader>n :tabn <CR>
+nnoremap <leader>pc :pclose <CR> 
+nnoremap <leader>vr :vertical resize 30<CR> 
+" Be sure to check out :help :pclose
+nnoremap <leader>u :UndotreeShow<CR>
+nnoremap <leader>pv :wincmd v<bar> :Ex <bar> :vertical resize 30<CR>
+nnoremap <Leader>ps :Rg<SPACE>
+nnoremap <silent> <Leader>+ :vertical resize +5<CR>
+nnoremap <silent> <Leader>- :vertical resize -5<CR>
+
+" On preserving folds
+" https://www.linux.com/training-tutorials/vim-tips-folding-fun
+" https://stackoverflow.com/questions/37552913/vim-how-to-keep-folds-on-save
+
+" Some people are gems!
+" https://vi.stackexchange.com/questions/13864/bufwinleave-mkview-with-unnamed-file-error-32
+augroup AutoSaveGroup
+  autocmd!
+  " view files are about 500 bytes
+  " bufleave but not bufwinleave captures closing 2nd tab
+  " nested is needed by bufwrite* (if triggered via other autocmd)
+  " BufHidden for compatibility with `set hidden`
+  autocmd BufWinLeave,BufLeave,BufWritePost,BufHidden,QuitPre ?* nested silent! mkview!
+  autocmd BufWinEnter ?* silent! loadview
+augroup end
+
+set viewoptions=folds,cursor
+set sessionoptions=folds
