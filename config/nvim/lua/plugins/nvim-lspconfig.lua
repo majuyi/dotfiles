@@ -10,8 +10,19 @@ return {
 
     config = function()
         -- Overrides layered on top of the definitions lspconfig ships.
+        -- --query-driver is a permission, not a default. It whitelists drivers
+        -- clangd is allowed to EXECUTE to extract their system include paths;
+        -- it changes nothing on its own. A project only uses GCC's headers if
+        -- a .clangd names g++-16 as its Compiler, which the competitive
+        -- programming trees and 553/Sandbox do and nothing else does — that is
+        -- what keeps bits/stdc++.h and __gnu_pbds resolving there while the
+        -- rest of the C++ here stays on Apple clang and libc++.
         vim.lsp.config("clangd", {
-            cmd = { "clangd", "--background-index" },
+            cmd = {
+                "clangd",
+                "--background-index",
+                "--query-driver=/opt/homebrew/bin/g++-*",
+            },
         })
 
         vim.lsp.config("lua_ls", {
