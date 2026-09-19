@@ -355,9 +355,10 @@ fi
 # ---------------------------------------------------------------------------
 if [ -f /opt/homebrew/share/zsh-autosuggestions/zsh-autosuggestions.zsh ]; then
     . /opt/homebrew/share/zsh-autosuggestions/zsh-autosuggestions.zsh
-    # Osaka color8. Must sit clearly below the #839395 foreground, or the
-    # ghost text reads as something you typed. #999 was brighter than the fg.
-    ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE='fg=#576d74'
+    # Must sit clearly below the #839395 foreground, or the ghost text reads
+    # as something you typed. #999 was brighter than the fg; color8 #576d74
+    # worked, this goes one step further to widen the gap against a lit path.
+    ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE='fg=#4a5f66'
 fi
 
 # zsh-syntax-highlighting must be sourced at the very end of the file.
@@ -372,7 +373,11 @@ if [ -f /opt/homebrew/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh 
     ZSH_HIGHLIGHT_STYLES[precommand]=fg=green,underline
     ZSH_HIGHLIGHT_STYLES[commandseparator]=fg=blue,bold
     ZSH_HIGHLIGHT_STYLES[autodirectory]=fg=green,underline
-    ZSH_HIGHLIGHT_STYLES[path]=bold
+    # Solarized base1, one step above the #839395 foreground, so a typed path
+    # advances while the autosuggestion recedes. path_prefix is the half-typed
+    # case and needs it just as much; bold marks the path as actually existing.
+    ZSH_HIGHLIGHT_STYLES[path]=fg=#93a1a1,bold
+    ZSH_HIGHLIGHT_STYLES[path_prefix]=fg=#93a1a1
     ZSH_HIGHLIGHT_STYLES[path_pathseparator]=
     ZSH_HIGHLIGHT_STYLES[path_prefix_pathseparator]=
     ZSH_HIGHLIGHT_STYLES[globbing]=fg=blue,bold
