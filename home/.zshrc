@@ -355,7 +355,9 @@ fi
 # ---------------------------------------------------------------------------
 if [ -f /opt/homebrew/share/zsh-autosuggestions/zsh-autosuggestions.zsh ]; then
     . /opt/homebrew/share/zsh-autosuggestions/zsh-autosuggestions.zsh
-    ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE='fg=#999'
+    # Osaka color8. Must sit clearly below the #839395 foreground, or the
+    # ghost text reads as something you typed. #999 was brighter than the fg.
+    ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE='fg=#576d74'
 fi
 
 # zsh-syntax-highlighting must be sourced at the very end of the file.
