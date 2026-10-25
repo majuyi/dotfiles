@@ -54,5 +54,12 @@ link "$DOTFILES/config/kitty/kitty.conf" "$CONFIG_HOME/kitty/kitty.conf"
 link "$DOTFILES/config/kitty/solarized-osaka-dark.conf" "$CONFIG_HOME/kitty/solarized-osaka-dark.conf"
 link "$DOTFILES/config/starship.toml" "$CONFIG_HOME/starship.toml"
 
+# ~/.claude — only the custom theme. The rest is sessions, history and caches,
+# private or regenerated, and this repo is public. Linked per file, never the
+# directory. Claude Code's own theme editor (/theme, ctrl+e) may save by
+# replacing the file, which would swap this link for a plain copy; edit the
+# repo file instead.
+link "$DOTFILES/claude/themes/osaka-black.json" "$HOME/.claude/themes/osaka-black.json"
+
 echo
 echo "Done. Open a new shell to pick up the zsh config."

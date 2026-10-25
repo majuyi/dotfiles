@@ -1,0 +1,7 @@
+{
+  "name": "Osaka Black",
+  "base": "dark",
+  "overrides": {
+    "selectionBg": "#002c38"
+  }
+}

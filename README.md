@@ -19,6 +19,7 @@ existing file aside as `<name>.backup-<timestamp>` instead of overwriting it.
 ```
 home/      -> $HOME              .zshrc .zprofile .vimrc .tmux.conf .gitconfig .fzf.zsh
 config/    -> ~/.config          nvim/ kitty/kitty.conf
+claude/    -> ~/.claude          themes/osaka-black.json (Claude Code theme only)
 ```
 
 ## What's here
