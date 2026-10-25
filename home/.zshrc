@@ -399,7 +399,9 @@ if [ -f /opt/homebrew/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh 
     ZSH_HIGHLIGHT_STYLES[back-dollar-quoted-argument]=fg=magenta,bold
     ZSH_HIGHLIGHT_STYLES[assign]=none
     ZSH_HIGHLIGHT_STYLES[redirection]=fg=blue,bold
-    ZSH_HIGHLIGHT_STYLES[comment]=fg=black,bold
+    # color8, Osaka's grey. black is color0, the same as the background, so a
+    # # comment typed at the prompt was invisible.
+    ZSH_HIGHLIGHT_STYLES[comment]=fg=8
     ZSH_HIGHLIGHT_STYLES[named-fd]=none
     ZSH_HIGHLIGHT_STYLES[numeric-fd]=none
     ZSH_HIGHLIGHT_STYLES[arg0]=fg=cyan
