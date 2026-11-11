@@ -345,6 +345,14 @@ pyenv() {
 # ---------------------------------------------------------------------------
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
 
+# Solarized Osaka on pitch black, matching kitty/tmux/nvim. bg:-1 and gutter:-1
+# let the terminal's #000000 show through; the current line uses kitty's
+# selection teal #002c38. Text above #839395 is emphasised, below it is dimmed.
+export FZF_DEFAULT_OPTS="--color=fg:#839395,bg:-1,hl:#268bd3 \
+--color=fg+:#93a1a1,bg+:#002c38,hl+:#268bd3,gutter:-1 \
+--color=info:#b28500,prompt:#268bd3,pointer:#268bd3,marker:#29a298,spinner:#29a298 \
+--color=header:#576d74,border:#063540,separator:#063540,scrollbar:#576d74,query:#839395"
+
 # ---------------------------------------------------------------------------
 # zoxide
 # ---------------------------------------------------------------------------
