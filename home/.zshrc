@@ -254,6 +254,11 @@ add-zsh-hook precmd _zshrc_precmd
 # not ship — so none of this ran. CLICOLOR/LSCOLORS is the BSD equivalent.
 export CLICOLOR=1
 
+# Claude Code drops to 256 colours whenever $TMUX is set, which bends the theme
+# (selection #002c38 becomes #005f5f). kitty's terminfo has Tc, so tmux passes
+# truecolor through fine; tell Claude Code to keep it.
+export CLAUDE_CODE_TMUX_TRUECOLOR=1
+
 alias ls='ls -G'
 alias la='ls -A'
 alias l='ls -CF'
