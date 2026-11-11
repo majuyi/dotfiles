@@ -86,16 +86,15 @@ HISTSIZE=1000000    # events kept in memory for this session
 SAVEHIST=1000000    # events written to HISTFILE
 
 setopt EXTENDED_HISTORY          # record timestamp and duration
-setopt INC_APPEND_HISTORY        # write as you go, not just at exit
-setopt SHARE_HISTORY             # share between running sessions
-setopt HIST_EXPIRE_DUPS_FIRST    # drop duplicates first when trimming
-setopt HIST_IGNORE_DUPS          # don't record an immediate repeat
+# SHARE_HISTORY also writes each command as you go, so INC_APPEND_HISTORY and
+# APPEND_HISTORY are implied (zsh's manual says to turn INC_APPEND off with it),
+# and HIST_IGNORE_ALL_DUPS makes IGNORE_DUPS and EXPIRE_DUPS_FIRST moot.
+setopt SHARE_HISTORY             # write as you go, and share between sessions
 setopt HIST_IGNORE_ALL_DUPS      # keep only the newest copy of a command
 setopt HIST_FIND_NO_DUPS         # don't show duplicates when searching
 setopt HIST_IGNORE_SPACE         # skip commands typed with a leading space
 setopt HIST_VERIFY               # expand ! but let you confirm before running
 setopt HIST_REDUCE_BLANKS        # tidy up whitespace
-setopt APPEND_HISTORY
 setopt HIST_SAVE_NO_DUPS         # no duplicates in the file
 setopt HIST_BEEP                 # beep when a history search fails
 
@@ -106,88 +105,17 @@ alias history="history 0"        # show the whole history, not the last 16
 # ---------------------------------------------------------------------------
 # Prompt
 # ---------------------------------------------------------------------------
-# The old file built a prompt here and then overwrote it at the bottom with a
-# hardcoded `export PS1`, which made the toggle below dead on arrival. The
-# hardcoded version is now the twoline case, so ^P actually works — and PS1 is
-# no longer exported, which it never should have been.
+# Layout for the `time` keyword's report.
 TIMEFMT=$'\nreal\t%E\nuser\t%U\nsys\t%S\ncpu\t%P'
 
-# Git branch and working-tree state in the prompt, via zsh's own vcs_info —
-# no external prompt binary. `*` means unstaged changes, `+` means staged.
-autoload -Uz vcs_info
-zstyle ':vcs_info:*' enable git
-
-# check-for-changes is what produces `*`/`+`, and it costs a diff against the
-# index on every prompt. Invisible in small repos, a real stall in large ones.
-# `vcs-dirty off` drops it for the session (branch name stays); `vcs-dirty on`
-# restores it. To kill it permanently for known-huge trees, uncomment and edit:
-# zstyle ':vcs_info:*' disable-patterns "$HOME/some/monorepo(|/*)"
-VCS_DIRTY_CHECK=${VCS_DIRTY_CHECK:-true}
-vcs-dirty() {
-    case "$1" in
-        on|true)   VCS_DIRTY_CHECK=true  ;;
-        off|false) VCS_DIRTY_CHECK=false ;;
-        "")        print -r -- "vcs-dirty: $VCS_DIRTY_CHECK"; return 0 ;;
-        *)         print -ru2 -- "usage: vcs-dirty [on|off]"; return 1 ;;
-    esac
-    zstyle ':vcs_info:git:*' check-for-changes "$VCS_DIRTY_CHECK"
-}
-zstyle ':vcs_info:git:*' check-for-changes "$VCS_DIRTY_CHECK"
-
-zstyle ':vcs_info:git:*' unstagedstr '*'
-zstyle ':vcs_info:git:*' stagedstr '+'
-# The `─(...)` wrapper and colour live here, not in PROMPT. Wrapping them in a
-# ${vcs_info_msg_0_:+...} block instead silently ate the branch name: zsh pairs
-# the `{` of a `%F{...}` inside the :+ body with the `}` of the nested
-# ${vcs_info_msg_0_}, truncating the colour escape and leaking a stray `}`.
-# formats only emit when inside a repo, so the conditional was never needed.
-zstyle ':vcs_info:git:*' formats       '─(%F{yellow}%b%u%c%f)'
-zstyle ':vcs_info:git:*' actionformats '─(%F{yellow}%b|%a%u%c%f)'
-
-configure_prompt() {
-    case "$PROMPT_ALTERNATIVE" in
-        twoline)
-            PROMPT=$'%F{%(#.blue.green)}┌──${VIRTUAL_ENV:+($(basename $VIRTUAL_ENV))─}(%B%F{%(#.red.blue)}Ave Majuyi%b%F{%(#.blue.green)})-[%B%F{reset}%(6~.%-1~/…/%4~.%5~)%b%F{%(#.blue.green)}]${vcs_info_msg_0_}%F{%(#.blue.green)}\n└─%(?..%B%F{red}[%?]%b%F{%(#.blue.green)} )%B%(#.%F{red}#.%F{blue}$)%b%F{reset} '
-            RPROMPT=
-            ;;
-        oneline)
-            PROMPT=$'${VIRTUAL_ENV:+($(basename $VIRTUAL_ENV))}%B%F{%(#.red.blue)}%n@%m%b%F{reset}:%B%F{%(#.blue.green)}%~%b%F{reset}%(?.. %B%F{red}[%?]%b%F{reset})%(#.#.$) '
-            RPROMPT=
-            ;;
-    esac
-}
-
-PROMPT_ALTERNATIVE=twoline
 NEWLINE_BEFORE_PROMPT=yes
 VIRTUAL_ENV_DISABLE_PROMPT=1
-configure_prompt
 
-toggle_oneline_prompt() {
-    if [ "$PROMPT_ALTERNATIVE" = oneline ]; then
-        PROMPT_ALTERNATIVE=twoline
-    else
-        PROMPT_ALTERNATIVE=oneline
-    fi
-    configure_prompt
-    zle reset-prompt
-}
-zle -N toggle_oneline_prompt
-# Alt-P, not ^P: in the emacs keymap ^P is up-line-or-history, the partner to
-# ^N, and shadowing it costs a core navigation key for a rarely-used toggle.
-bindkey '^[p' toggle_oneline_prompt
-
-# A third prompt: starship, in the same Osaka palette as tmux, kitty and nvim
-# (~/.config/starship.toml). It gives two things the zsh prompt above does not
-# — how long the last command ran, and a right-aligned clock.
-#
-# Everything above stays intact and is one env var away: `export PROMPT_STYLE=zsh`
-# then `exec zsh`. It is also the automatic fallback if the binary ever goes
-# missing, so a broken install cannot leave you without a prompt.
-#
-# Note that Alt-P is inert while starship is active: starship re-sets PROMPT on
-# every precmd, so the twoline/oneline toggle has nothing to hold on to.
-PROMPT_STYLE=${PROMPT_STYLE:-starship}
-if [ "$PROMPT_STYLE" = starship ] && command -v starship >/dev/null 2>&1; then
+# Starship, in the same Osaka palette as tmux, kitty and nvim
+# (~/.config/starship.toml). The old hand-built zsh prompt (vcs_info,
+# twoline/oneline, Alt-P) was a fallback that never ran and went on 11 Nov; it
+# is in git history. If starship is missing, zsh's plain default prompt shows.
+if command -v starship >/dev/null 2>&1; then
     eval "$(starship init zsh)"
     _STARSHIP_ACTIVE=1
 fi
@@ -224,17 +152,11 @@ esac
 # Registered on the precmd hook array rather than defined as a bare `precmd`
 # function: the function is a single global slot, so anything sourced later
 # that defines its own (iTerm2 shell integration is the usual culprit) would
-# silently replace this one and stop the git segment and title from updating.
+# silently replace this one and stop the caps and title from updating.
 autoload -Uz add-zsh-hook
 
 _zshrc_precmd() {
-    # vcs_info only feeds the zsh prompt. With starship drawing git itself it
-    # was a second full git pass before every prompt, for output nothing read.
-    if [ -n "$_STARSHIP_ACTIVE" ]; then
-        _starship_caps
-    else
-        vcs_info                  # refresh ${vcs_info_msg_0_} for the prompt
-    fi
+    [ -n "$_STARSHIP_ACTIVE" ] && _starship_caps
     print -Pnr -- "$TERM_TITLE"
     # blank line between commands, but not above the first prompt
     if [ "$NEWLINE_BEFORE_PROMPT" = yes ]; then
@@ -377,7 +299,7 @@ fi
 # zsh-syntax-highlighting must be sourced at the very end of the file.
 if [ -f /opt/homebrew/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh ]; then
     . /opt/homebrew/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
-    ZSH_HIGHLIGHT_HIGHLIGHTERS=(main brackets pattern)
+    ZSH_HIGHLIGHT_HIGHLIGHTERS=(main brackets)   # pattern dropped: no patterns defined
     ZSH_HIGHLIGHT_STYLES[default]=none
     ZSH_HIGHLIGHT_STYLES[unknown-token]=underline
     ZSH_HIGHLIGHT_STYLES[reserved-word]=fg=cyan,bold
