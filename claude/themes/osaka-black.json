@@ -2,6 +2,11 @@
   "name": "Osaka Black",
   "base": "dark",
   "overrides": {
-    "selectionBg": "#002c38"
+    "selectionBg": "#002c38",
+    "permission": "#268bd3",
+    "permissionShimmer": "#6cb0e6",
+    "suggestion": "#268bd3",
+    "remember": "#268bd3",
+    "rate_limit_fill": "#268bd3"
   }
 }
