@@ -2,7 +2,7 @@
 # tmux-resurrect post-save-layout hook (set in tmux.conf). Arg: the save file.
 # Drops hatch's claude-* sessions from the save: resurrect cannot restart
 # Claude in them, so restoring them only leaves empty shells that hatch then
-# attaches to instead of starting Claude (see hatch-launch.sh).
+# attaches to instead of starting Claude.
 set -uo pipefail
 f="$1"
 [ -f "$f" ] || exit 0
